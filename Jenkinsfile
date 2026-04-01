@@ -165,8 +165,8 @@ pipeline {
                         echo "Triggering ArgoCD sync for ${ARGOCD_APP_NAME}..."
                         argocd app sync ${ARGOCD_APP_NAME} \
                             --auth-token ${ARGOCD_TOKEN} \
-                            --server argocd-server.argocd.svc.cluster.local \
-                            --grpc-web \
+                            --server host.docker.internal:30443 \
+                            --insecure \
                             --timeout 120 || echo "ArgoCD CLI not available, sync via webhook"
                     """
                 }
