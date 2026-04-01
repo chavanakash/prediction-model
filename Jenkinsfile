@@ -32,6 +32,13 @@ pipeline {
             steps {
                 echo "Checking out code from ${GIT_REPO_URL}"
                 checkout scm
+                script {
+                    def msg = sh(script: 'git log -1 --pretty=%B', returnStdout: true).trim()
+                    if (msg.contains('[skip ci]')) {
+                        currentBuild.result = 'NOT_BUILT'
+                        error('Skipping CI — commit contains [skip ci]')
+                    }
+                }
             }
         }
 
