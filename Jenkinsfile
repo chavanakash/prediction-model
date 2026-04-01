@@ -149,22 +149,29 @@ pipeline {
 
         stage('Commit Updated Values') {
             when {
-                branch 'main'
+                expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' }
             }
             steps {
-                sh """
-                    git config user.email "jenkins@ci.local"
-                    git config user.name "Jenkins CI"
-                    git add ${HELM_CHART_PATH}/values.yaml
-                    git commit -m "ci: update image tags to build ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
-                    git push origin HEAD:main || echo "Push failed - check git credentials"
-                """
+                withCredentials([usernamePassword(
+                    credentialsId: 'github-credentials',
+                    usernameVariable: 'GIT_USER',
+                    passwordVariable: 'GIT_TOKEN'
+                )]) {
+                    sh """
+                        git config user.email "jenkins@ci.local"
+                        git config user.name "Jenkins CI"
+                        git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/chavanakash/prediction-model.git
+                        git add ${HELM_CHART_PATH}/values.yaml
+                        git commit -m "ci: update image tags to build ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
+                        git push origin HEAD:main
+                    """
+                }
             }
         }
 
         stage('ArgoCD Sync') {
             when {
-                branch 'main'
+                expression { env.GIT_BRANCH == 'origin/main' || env.GIT_BRANCH == 'main' }
             }
             steps {
                 withCredentials([string(credentialsId: 'argocd-token', variable: 'ARGOCD_TOKEN')]) {
