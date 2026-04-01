@@ -18,7 +18,7 @@ pipeline {
 
     options {
         buildDiscarder(logRotator(numToKeepStr: '10'))
-        timeout(time: 30, unit: 'MINUTES')
+        timeout(time: 60, unit: 'MINUTES')
         disableConcurrentBuilds()
     }
 
@@ -205,7 +205,6 @@ pipeline {
             sh """
                 docker rmi ${BACKEND_IMAGE}:${IMAGE_TAG} || true
                 docker rmi ${FRONTEND_IMAGE}:${IMAGE_TAG} || true
-                // Prune stopped containers and dangling images only — preserve build cache
                 docker container prune -f || true
                 docker image prune -f || true
             """
