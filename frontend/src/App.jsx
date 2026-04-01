@@ -6,11 +6,13 @@ import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
 import DatasetDetail from './pages/DatasetDetail';
 import PredictionResult from './pages/PredictionResult';
+import WelcomeSplash from './components/WelcomeSplash';
 import './App.css';
 
 export default function App() {
   return (
     <>
+      <WelcomeSplash />
       <Toaster
         position="top-right"
         toastOptions={{
