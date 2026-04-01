@@ -3,7 +3,7 @@ replicaCount: 1
 backend:
   image:
     repository: dockerizzz/prediction-backend
-    tag: "12"
+    tag: "14"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -22,7 +22,7 @@ backend:
 frontend:
   image:
     repository: dockerizzz/prediction-frontend
-    tag: "12"
+    tag: "14"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
@@ -39,7 +39,7 @@ postgres:
   enabled: true
   image:
     repository: postgres
-    tag: "12"
+    tag: "14"
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
