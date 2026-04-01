@@ -19,6 +19,13 @@ pipeline {
         disableConcurrentBuilds()
     }
 
+    triggers {
+        // Poll GitHub every 2 minutes for changes on main branch
+        pollSCM('H/2 * * * *')
+        // Also responds instantly to GitHub webhook (configure webhook in repo settings)
+        githubPush()
+    }
+
     stages {
 
         stage('Checkout') {
