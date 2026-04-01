@@ -32,11 +32,28 @@ const CustomTooltip = ({ active, payload }) => {
   );
 };
 
+function predictValue(modelType, params, x) {
+  const eq = params?.equation;
+  if (!eq || x === '' || isNaN(x)) return null;
+  const xn = parseFloat(x);
+  try {
+    switch (modelType) {
+      case 'linear':      return eq[0] * xn + eq[1];
+      case 'polynomial':  return eq[0] * xn * xn + eq[1] * xn + eq[2];
+      case 'exponential': return eq[0] * Math.exp(eq[1] * xn);
+      case 'logarithmic': return eq[0] + eq[1] * Math.log(xn);
+      case 'power':       return eq[0] * Math.pow(xn, eq[1]);
+      default:            return eq[0] * xn + eq[1];
+    }
+  } catch { return null; }
+}
+
 export default function PredictionResult() {
   const { id } = useParams();
   const [prediction, setPrediction] = useState(null);
   const [dataset, setDataset] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [customX, setCustomX] = useState('');
 
   useEffect(() => {
     loadData();
@@ -250,6 +267,39 @@ export default function PredictionResult() {
             />
           </ComposedChart>
         </ResponsiveContainer>
+      </div>
+
+      {/* Custom X input */}
+      <div className="custom-predict-card">
+        <h2>Try a Value</h2>
+        <p className="custom-predict-desc">Enter any X value to instantly get the predicted Y using this model</p>
+        <div className="custom-predict-row">
+          <input
+            type="number"
+            className="custom-predict-input"
+            placeholder={`Enter ${prediction.x_column && prediction.x_column !== '__index__' ? prediction.x_column : 'X'} value`}
+            value={customX}
+            onChange={e => setCustomX(e.target.value)}
+          />
+          <div className="custom-predict-result">
+            {customX !== '' && !isNaN(customX) ? (
+              <>
+                <span className="custom-predict-label">Predicted {prediction.y_column || 'Y'}</span>
+                <span className="custom-predict-value">
+                  {(() => {
+                    const params = typeof prediction.model_params === 'string'
+                      ? JSON.parse(prediction.model_params)
+                      : prediction.model_params;
+                    const val = predictValue(prediction.model_type, params, customX);
+                    return val !== null ? formatNumber(Math.max(0, val)) : '—';
+                  })()}
+                </span>
+              </>
+            ) : (
+              <span className="custom-predict-placeholder">← Enter a value to predict</span>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Forecast table */}
