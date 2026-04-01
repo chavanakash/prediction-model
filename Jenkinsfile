@@ -165,14 +165,17 @@ pipeline {
                     usernameVariable: 'GIT_USER',
                     passwordVariable: 'GIT_TOKEN'
                 )]) {
-                    sh """
+                    sh '''
                         git config user.email "jenkins@ci.local"
                         git config user.name "Jenkins CI"
-                        git remote set-url origin https://${GIT_USER}:${GIT_TOKEN}@github.com/chavanakash/prediction-model.git
-                        git add ${HELM_CHART_PATH}/values.yaml
-                        git commit -m "ci: update image tags to build ${IMAGE_TAG} [skip ci]" || echo "No changes to commit"
-                        git push origin HEAD:main
-                    """
+                        git remote set-url origin https://$GIT_USER:$GIT_TOKEN@github.com/chavanakash/prediction-model.git
+                        git fetch origin main
+                        git checkout main || git checkout -b main origin/main
+                        git pull --rebase origin main
+                        git add ''' + HELM_CHART_PATH + '''/values.yaml
+                        git commit -m "ci: update image tags to build ''' + IMAGE_TAG + ''' [skip ci]" || echo "No changes to commit"
+                        git push origin main
+                    '''
                 }
             }
         }
