@@ -4,7 +4,7 @@ WORKDIR /app
 COPY package*.json .npmrc ./
 # Cache node_modules on the build host — survives between Jenkins builds
 RUN --mount=type=cache,target=/root/.npm \
-    npm install --prefer-offline
+    npm ci --prefer-offline
 COPY public ./public
 COPY src ./src
 RUN npm run build
