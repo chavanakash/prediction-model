@@ -202,20 +202,26 @@ pipeline {
 
     post {
         always {
-            sh """
-                docker rmi ${BACKEND_IMAGE}:${IMAGE_TAG} || true
-                docker rmi ${FRONTEND_IMAGE}:${IMAGE_TAG} || true
-                docker container prune -f || true
-                docker image prune -f || true
-            """
-            deleteDir()
+            script {
+                if (currentBuild.currentResult != 'ABORTED') {
+                    sh """
+                        docker rmi ${BACKEND_IMAGE}:${IMAGE_TAG} || true
+                        docker rmi ${FRONTEND_IMAGE}:${IMAGE_TAG} || true
+                        docker container prune -f || true
+                        docker image prune -f || true
+                    """
+                    deleteDir()
+                }
+            }
         }
         success {
             echo "Pipeline succeeded! Images pushed: build ${IMAGE_TAG}"
-            // Add Slack/email notifications here if needed
         }
         failure {
             echo "Pipeline failed on build ${IMAGE_TAG}"
+        }
+        aborted {
+            echo "Pipeline was aborted — skipping post cleanup"
         }
     }
 }
