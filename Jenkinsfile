@@ -111,33 +111,32 @@ pipeline {
                     usernameVariable: 'DOCKER_USER',
                     passwordVariable: 'DOCKER_PASS'
                 )]) {
-                    sh """
+                    sh '''
                         echo "Logging into Docker Hub..."
-                        echo "${DOCKER_PASS}" | docker login -u "${DOCKER_USER}" --password-stdin
+                        echo "$DOCKER_PASS" | docker login -u "$DOCKER_USER" --password-stdin
 
                         echo "Pushing backend images..."
-                        docker push ${BACKEND_IMAGE}:${IMAGE_TAG}
-                        docker push ${BACKEND_IMAGE}:latest
+                        docker push ''' + BACKEND_IMAGE + ''':''' + IMAGE_TAG + '''
+                        docker push ''' + BACKEND_IMAGE + ''':latest
 
                         echo "Pushing frontend images..."
-                        docker push ${FRONTEND_IMAGE}:${IMAGE_TAG}
-                        docker push ${FRONTEND_IMAGE}:latest
+                        docker push ''' + FRONTEND_IMAGE + ''':''' + IMAGE_TAG + '''
+                        docker push ''' + FRONTEND_IMAGE + ''':latest
 
                         docker logout
-                    """
+                    '''
                 }
             }
         }
 
         stage('Update Helm Values') {
             steps {
-                sh """
-                    echo "Updating Helm chart image tags to ${IMAGE_TAG}..."
-                    sed -i "s|tag: .*|tag: \\"${IMAGE_TAG}\\"|g" ${HELM_CHART_PATH}/values.yaml
+                sh '''
+                    echo "Updating Helm chart image tags to ''' + IMAGE_TAG + '''..."
+                    sed -i "/repository: dockerizzz/{n;s|tag: .*|tag: \"''' + IMAGE_TAG + '''\"|}" ''' + HELM_CHART_PATH + '''/values.yaml
 
-                    # Show the change
-                    grep -A2 'image:' ${HELM_CHART_PATH}/values.yaml || true
-                """
+                    grep -A2 'image:' ''' + HELM_CHART_PATH + '''/values.yaml || true
+                '''
             }
         }
 
