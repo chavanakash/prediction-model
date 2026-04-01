@@ -1,0 +1,12 @@
+apiVersion: v2
+name: prediction-app
+description: AI-powered trend prediction platform
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - prediction
+  - machine-learning
+  - forecasting
+maintainers:
+  - name: dockerizzz

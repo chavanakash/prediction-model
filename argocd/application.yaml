@@ -1,0 +1,59 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prediction-model
+  namespace: argocd
+  labels:
+    app: prediction-model
+    team: platform
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+  # Finalizer ensures argocd cleans up resources on app delete
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+
+  source:
+    # Update this to your actual git repository
+    repoURL: https://github.com/chavanakash/prediction-model.git
+    targetRevision: main
+    path: helm/prediction-app
+
+    helm:
+      releaseName: prediction-model
+      valueFiles:
+        - values.yaml
+      # Override production values here
+      parameters:
+        - name: backend.image.tag
+          value: "latest"
+        - name: frontend.image.tag
+          value: "latest"
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prediction-model
+
+  syncPolicy:
+    automated:
+      prune: true          # Delete resources removed from Helm chart
+      selfHeal: true       # Re-sync if manual changes are made in cluster
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true      # Auto-create namespace if missing
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true
+    retry:
+      limit: 3
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # Health assessment
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/replicas   # Ignore HPA-managed replica counts

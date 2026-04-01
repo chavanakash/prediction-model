@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prediction-model
+  labels:
+    app: prediction-model
+    managed-by: argocd

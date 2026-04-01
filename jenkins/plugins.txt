@@ -1,0 +1,17 @@
+# Required Jenkins plugins
+# Install via: Manage Jenkins → Plugins → Available plugins
+# Or use Jenkins CLI: jenkins-plugin-cli --plugin-file jenkins/plugins.txt
+
+pipeline-model-definition       # Declarative Pipeline
+workflow-aggregator              # Pipeline suite
+git                              # Git SCM
+github                           # GitHub integration
+credentials-binding              # withCredentials() step
+docker-workflow                  # docker.build(), docker.push()
+docker-plugin                    # Docker cloud agents
+kubernetes                       # Kubernetes agents (if using K8s Jenkins)
+blueocean                        # Blue Ocean UI (optional but nice)
+timestamper                      # Add timestamps to console output
+ws-cleanup                       # cleanWs() step
+build-timeout                    # timeout() step
+ansicolor                        # Colored console output
