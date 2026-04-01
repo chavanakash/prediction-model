@@ -11,6 +11,9 @@ pipeline {
         ARGOCD_APP_NAME = 'prediction-model'
         GIT_REPO_URL = 'https://github.com/chavanakash/prediction-model.git'
         IMAGE_TAG = "${env.BUILD_NUMBER}"
+        // Enable Docker BuildKit for cache mounts and faster builds
+        DOCKER_BUILDKIT = '1'
+        BUILDKIT_PROGRESS = 'plain'
     }
 
     options {
@@ -41,8 +44,13 @@ pipeline {
                     steps {
                         dir('backend') {
                             sh """
-                                echo "Building backend image..."
-                                docker build -t ${BACKEND_IMAGE}:${IMAGE_TAG} -t ${BACKEND_IMAGE}:latest .
+                                echo "Building backend image with cache..."
+                                docker pull ${BACKEND_IMAGE}:latest || true
+                                docker build \
+                                    --cache-from ${BACKEND_IMAGE}:latest \
+                                    --build-arg BUILDKIT_INLINE_CACHE=1 \
+                                    -t ${BACKEND_IMAGE}:${IMAGE_TAG} \
+                                    -t ${BACKEND_IMAGE}:latest .
                             """
                         }
                     }
@@ -51,8 +59,11 @@ pipeline {
                     steps {
                         dir('frontend') {
                             sh """
-                                echo "Building frontend image..."
+                                echo "Building frontend image with cache..."
+                                docker pull ${FRONTEND_IMAGE}:latest || true
                                 docker build \
+                                    --cache-from ${FRONTEND_IMAGE}:latest \
+                                    --build-arg BUILDKIT_INLINE_CACHE=1 \
                                     --build-arg REACT_APP_API_URL=/api \
                                     -t ${FRONTEND_IMAGE}:${IMAGE_TAG} \
                                     -t ${FRONTEND_IMAGE}:latest .
@@ -194,7 +205,9 @@ pipeline {
             sh """
                 docker rmi ${BACKEND_IMAGE}:${IMAGE_TAG} || true
                 docker rmi ${FRONTEND_IMAGE}:${IMAGE_TAG} || true
-                docker system prune -f || true
+                // Prune stopped containers and dangling images only — preserve build cache
+                docker container prune -f || true
+                docker image prune -f || true
             """
             cleanWs()
         }

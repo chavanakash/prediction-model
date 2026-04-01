@@ -1,7 +1,10 @@
+# syntax=docker/dockerfile:1
 FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
-RUN npm install --only=production
+COPY package*.json .npmrc ./
+# Cache node_modules on the build host — survives between Jenkins builds
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --omit=dev --prefer-offline || npm install --omit=dev
 
 FROM node:20-alpine
 WORKDIR /app
