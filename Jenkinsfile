@@ -208,7 +208,7 @@ pipeline {
                 docker container prune -f || true
                 docker image prune -f || true
             """
-            cleanWs()
+            deleteDir()
         }
         success {
             echo "Pipeline succeeded! Images pushed: build ${IMAGE_TAG}"

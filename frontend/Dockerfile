@@ -7,6 +7,7 @@ RUN --mount=type=cache,target=/root/.npm \
     npm install --prefer-offline
 COPY public ./public
 COPY src ./src
+ENV NODE_OPTIONS=--max_old_space_size=4096
 RUN npm run build
 
 FROM nginx:1.25-alpine
